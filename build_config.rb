@@ -1,6 +1,6 @@
 MRuby::Build.new do |conf|
   # load specific toolchain settings
-  toolchain :gcc
+  toolchain :vs2012
 
   # Use mrbgems
   # conf.gem 'examples/mrbgems/ruby_extension_example'
@@ -81,3 +81,64 @@ end
 #   conf.test_runner.command = 'env'
 #
 # end
+
+MRuby::CrossBuild.new('winrt-arm-dbg') do |conf|
+  toolchain :vs2012
+
+  cl = 'cl.exe'
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |pdir|
+    if File.exist?("#{pdir}#{File::ALT_SEPARATOR}cl.exe")
+      cl = "#{pdir}#{File::ALT_SEPARATOR}x86_arm#{File::ALT_SEPARATOR}cl.exe"
+      break
+    end
+  end
+  conf.cc.command = cl
+  conf.cc.flags << " /D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE /DDISABLE_STDIO /TP /ZW:nostdlib"
+  conf.linker.flags << " /MACHINE:ARM"
+  conf.build_mrbtest_lib_only
+  
+  conf.bins = %w()
+  conf.gem 'examples/mrbgems/c_and_ruby_extension_example'
+
+end
+
+MRuby::CrossBuild.new('nostdio-dbg') do |conf|
+  toolchain :vs2012
+
+  conf.cc.flags << " /DDISABLE_STDIO /TP  /ZW:nostdlib"
+  conf.build_mrbtest_lib_only
+  
+  conf.bins = %w()
+  conf.gem 'examples/mrbgems/c_and_ruby_extension_example'
+end
+
+MRuby::CrossBuild.new('winrt-arm') do |conf|
+  toolchain :vs2012
+
+  cl = 'cl.exe'
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |pdir|
+    if File.exist?("#{pdir}#{File::ALT_SEPARATOR}cl.exe")
+      cl = "#{pdir}#{File::ALT_SEPARATOR}x86_arm#{File::ALT_SEPARATOR}cl.exe"
+      break
+    end
+  end
+  conf.cc.command = cl
+  conf.cc.flags = %w(/c /nologo /W3 /MD /Zi /Od /DHAVE_STRING_H /DNO_GETTIMEOFDAY /D_CRT_SECURE_NO_WARNINGS /D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE /DDISABLE_STDIO /TP /ZW:nostdlib /DNDEBUG)
+  conf.linker.flags << " /MACHINE:ARM"
+  conf.build_mrbtest_lib_only
+  
+  conf.bins = %w()
+  conf.gem 'examples/mrbgems/c_and_ruby_extension_example'  
+
+end
+
+MRuby::CrossBuild.new('nostdio') do |conf|
+  toolchain :vs2012
+
+  conf.cc.flags = %w(/c /nologo /W3 /Zi /Od /DHAVE_STRING_H /DNO_GETTIMEOFDAY /D_CRT_SECURE_NO_WARNINGS /DDISABLE_STDIO /TP /MD /ZW:nostdlib /DNDEBUG)  
+  conf.build_mrbtest_lib_only
+  
+  conf.bins = %w()
+  conf.gem 'examples/mrbgems/c_and_ruby_extension_example'  
+end
+
